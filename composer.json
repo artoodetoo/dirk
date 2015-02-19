@@ -1,0 +1,23 @@
+{
+    "name": "artoodetoo/dirk",
+    "description": "PHP template system",
+    "license": "MIT",
+    "keywords": ["dirk", "package", "templating", "templates", "views"],
+    "authors": [
+        {
+            "name": "artoodetoo",
+            "email": "i.am@aroodetoo.org"
+        }
+    ],
+    "require": {
+        "php": ">=5.4.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "4.0.*"
+    },
+    "autoload": {
+        "psr-4": {
+            "R2\\Templating\\": "src"
+        }
+    }
+}
