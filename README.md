@@ -110,4 +110,4 @@ Inheritance and sections
 
 ### License
 
-The Dirk is open-sourced software licensed under the [MIT license](http://opensource.org/licenses/MIT)
+The Dirk is open-source software, licensed under the [MIT license](http://opensource.org/licenses/MIT)
