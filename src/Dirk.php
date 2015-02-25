@@ -8,17 +8,20 @@ class Dirk extends PhpEngine
 {
 
     protected $cache;
+    protected $echoFormat;
 
     public function __construct(array $config = [])
     {
         $config = array_replace_recursive(
             [
-                'ext' => '.dirk.html',
-                'cache' => '.'
+                'ext'   => '.dirk.html',
+                'cache' => '.',
+                'echo'  => 'htmlspecialchars(%s, ENT_QUOTES, \'UTF-8\')',
             ],
             $config
         );
-        $this->cache = isset($config['cache']) ? $config['cache'] : '.';
+        $this->cache      = isset($config['cache']) ? $config['cache'] : '.';
+        $this->echoFormat = isset($config['echo'])  ? $config['echo']  : '%s';
         parent::__construct($config);
     }
 
@@ -101,6 +104,16 @@ class Dirk extends PhpEngine
             $value
         );
 
+        // compile not escaped echoes
+        $value = preg_replace_callback(
+            '/\{\!!\s*(.+?)\s*!!\}(\r?\n)?/s',
+            function($matches) {
+                $whitespace = empty($matches[2]) ? '' : $matches[2] . $matches[2];
+                return '<?= '.$this->compileEchoDefaults($matches[1]).' ?>'.$whitespace;
+            },
+            $value
+        );
+
         // compile regular echoes
         $value = preg_replace_callback(
             '/(@)?\{\{\s*(.+?)\s*\}\}(\r?\n)?/s',
@@ -108,7 +121,9 @@ class Dirk extends PhpEngine
                 $whitespace = empty($matches[3]) ? '' : $matches[3] . $matches[3];
                 return $matches[1]
                     ? substr($matches[0], 1)
-                    : '<?= '.$this->compileEchoDefaults($matches[2]).' ?>'.$whitespace;
+                    : '<?= '
+                      .sprintf($this->echoFormat, $this->compileEchoDefaults($matches[2]))
+                      .' ?>'.$whitespace;
             },
             $value
         );

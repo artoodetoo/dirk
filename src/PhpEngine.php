@@ -57,7 +57,7 @@ class PhpEngine
         while ($_name = array_shift($this->templates)) {
             $this->beginBlock('content');
             require($this->prepare($_name));
-            $this->endBlock();
+            $this->endBlock(true);
         }
         return $this->block('content');
     }
