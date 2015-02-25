@@ -75,8 +75,9 @@ $view->render('hello', compact('name', 'list'));
 
 ### Feature list
 
-Echoes
-  * *{{ $var }}* - Echo content
+Echoes and comments
+  * *{{ $var }}* - Echo. NOTE: it's escaped by default, like in Laravel 5!
+  * *{!! $var !!}* - Raw echo without escaping
   * *{{ $var or 'default' }}* - Echo content with a default value
   * *{{{ $var }}}* - Echo escaped content
   * *{{-- Comment --}}* - A comment (in code, not in output)
