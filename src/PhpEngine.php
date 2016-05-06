@@ -4,6 +4,7 @@ namespace R2\Templating;
 
 class PhpEngine
 {
+    protected $composers;
     protected $views;
     protected $ext;
     protected $blocks;
@@ -13,12 +14,32 @@ class PhpEngine
      * Constructor
      * @param array $config
      */
-    public function __construct(array $config = [])
+    public function __construct(array $config = [], array $composers = [])
     {
         $this->views = isset($config['views']) ? $config['views'] : '.';
         $this->ext   = isset($config['ext'])   ? $config['ext']   : '.php';
         $this->blocks = [];
         $this->blockStack = [];
+        $this->composers = [];
+        foreach ($composers as $name => $composer) {
+            $this->composer($name, $composer);
+        }
+    }
+
+    /**
+     * Add view composer
+     * @param mixed $name     template name or array of names
+     * @param mixed $composer data in the same meaning as for fetch() call, or callable returning such data
+     */
+    public function composer($name, $composer)
+    {
+        if (is_array($name)) {
+            foreach ($name as $n) {
+                $this->composer($n, $composer);
+            }
+        } else {
+            $this->composers[$name] = $composer;
+        }
     }
 
     /**
@@ -56,6 +77,11 @@ class PhpEngine
         }
         while ($_name = array_shift($this->templates)) {
             $this->beginBlock('content');
+            foreach ($this->composers as $_cname => $_cdata) {
+                if ($_cname === $_name) {
+                    extract((is_callable($_cdata) ? $_cdata($this) : $_cdata) ?: []);
+                }
+            }
             require($this->prepare($_name));
             $this->endBlock(true);
         }

@@ -6,23 +6,25 @@ use R2\Templating\PhpEngine;
 
 class Dirk extends PhpEngine
 {
-
+    protected $nameSeparator;
     protected $cache;
     protected $echoFormat;
 
-    public function __construct(array $config = [])
+    public function __construct(array $config = [], $composers = [])
     {
         $config = array_replace_recursive(
             [
-                'ext'   => '.dirk.html',
-                'cache' => '.',
-                'echo'  => 'htmlspecialchars(%s, ENT_QUOTES, \'UTF-8\')',
+                'ext'       => '.dirk.html',
+                'cache'     => '',
+                'echo'      => 'htmlspecialchars(%s, ENT_QUOTES, \'UTF-8\')',
+                'separator' => '.',
             ],
             $config
         );
-        $this->cache      = isset($config['cache']) ? $config['cache'] : '.';
-        $this->echoFormat = isset($config['echo'])  ? $config['echo']  : '%s';
-        parent::__construct($config);
+        $this->cache         = $config['cache'];
+        $this->echoFormat    = $config['echo'];
+        $this->nameSeparator = $config['separator'];
+        parent::__construct($config, $composers);
     }
 
     protected $compilers = array(
@@ -38,14 +40,19 @@ class Dirk extends PhpEngine
      */
     protected function prepare($name)
     {
+        if ($this->nameSeparator !== '/') {
+            $name = str_replace($this->nameSeparator, '/', $name);
+        }
         $tpl = $this->views . '/' . $name . $this->ext;
         $php = $this->cache . '/' . md5($name) . '.php';
         if (!file_exists($php) || filemtime($tpl) > filemtime($php)) {
-            $text = file_get_contents($tpl);
-            foreach ($this->compilers as $type) {
-                $text = $this->{'compile' . $type}($text);
+            if (file_exists($tpl)) {
+                $text = file_get_contents($tpl);
+                foreach ($this->compilers as $type) {
+                    $text = $this->{'compile' . $type}($text);
+                }
+                file_put_contents($php, $text);
             }
-            file_put_contents($php, $text);
         }
         return $php;
     }
@@ -287,7 +294,7 @@ class Dirk extends PhpEngine
         if (isset($expression{0}) && $expression{0} == '(') {
             $expression = substr($expression, 1, -1);
         }
-        return "<?php include \$this->prepare({$expression}) ?>";
+        return "<?php require \$this->prepare({$expression}) ?>";
     }
 
     /**

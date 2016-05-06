@@ -18,7 +18,7 @@ The package can be installed via Composer by requiring the "artoodetoo/dirk" pac
 
 **/views/hello.dirk.html**
 ```html
-@extends('layout/main')
+@extends('layout.main')
 
 <h1>Hello {{{ $name }}}!<h1>
 
