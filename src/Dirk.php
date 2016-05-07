@@ -6,7 +6,6 @@ use R2\Templating\PhpEngine;
 
 class Dirk extends PhpEngine
 {
-    protected $nameSeparator;
     protected $cache;
     protected $echoFormat;
 
@@ -21,9 +20,8 @@ class Dirk extends PhpEngine
             ],
             $config
         );
-        $this->cache         = $config['cache'];
-        $this->echoFormat    = $config['echo'];
-        $this->nameSeparator = $config['separator'];
+        $this->cache        = $config['cache'];
+        $this->echoFormat   = $config['echo'];
         parent::__construct($config, $composers);
     }
 
@@ -40,8 +38,8 @@ class Dirk extends PhpEngine
      */
     protected function prepare($name)
     {
-        if ($this->nameSeparator !== '/') {
-            $name = str_replace($this->nameSeparator, '/', $name);
+        if ($this->separator !== '/') {
+            $name = str_replace($this->separator, '/', $name);
         }
         $tpl = $this->views . '/' . $name . $this->ext;
         $php = $this->cache . '/' . md5($name) . '.php';

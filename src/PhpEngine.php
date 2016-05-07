@@ -7,6 +7,7 @@ class PhpEngine
     protected $composers;
     protected $views;
     protected $ext;
+    protected $separator;
     protected $blocks;
     protected $blockStack;
 
@@ -16,8 +17,9 @@ class PhpEngine
      */
     public function __construct(array $config = [], array $composers = [])
     {
-        $this->views = isset($config['views']) ? $config['views'] : '.';
-        $this->ext   = isset($config['ext'])   ? $config['ext']   : '.php';
+        $this->views     = isset($config['views'])     ? $config['views']     : '.';
+        $this->ext       = isset($config['ext'])       ? $config['ext']       : '.php';
+        $this->separator = isset($config['separator']) ? $config['separator'] : '/';
         $this->blocks = [];
         $this->blockStack = [];
         $this->composers = [];
@@ -38,7 +40,8 @@ class PhpEngine
                 $this->composer($n, $composer);
             }
         } else {
-            $this->composers[$name] = $composer;
+            $p = '~^'.str_replace('\*', '[^'.$this->separator.']+', preg_quote($name, $this->separator.'~')).'$~';
+            $this->composers[$p][] = $composer;
         }
     }
 
@@ -49,6 +52,9 @@ class PhpEngine
      */
     protected function prepare($name)
     {
+        if ($this->separator !== '/') {
+            $name = str_replace($this->separator, '/', $name);
+        }
         return $this->views.'/'.$name.$this->ext;
     }
 
@@ -78,8 +84,10 @@ class PhpEngine
         while ($_name = array_shift($this->templates)) {
             $this->beginBlock('content');
             foreach ($this->composers as $_cname => $_cdata) {
-                if ($_cname === $_name) {
-                    extract((is_callable($_cdata) ? $_cdata($this) : $_cdata) ?: []);
+                if (preg_match($_cname, $_name)) {
+                    foreach ($_cdata as $_citem) {
+                        extract((is_callable($_citem) ? $_citem($this) : $_citem) ?: []);
+                    }
                 }
             }
             require($this->prepare($_name));
