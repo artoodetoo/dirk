@@ -6,23 +6,23 @@ use R2\Templating\PhpEngine;
 
 class Dirk extends PhpEngine
 {
+
     protected $cache;
     protected $echoFormat;
 
-    public function __construct(array $config = [], $composers = [])
+    public function __construct(array $config = [])
     {
         $config = array_replace_recursive(
             [
-                'ext'       => '.dirk.html',
-                'cache'     => '',
-                'echo'      => 'htmlspecialchars(%s, ENT_QUOTES, \'UTF-8\')',
-                'separator' => '.',
+                'ext'   => '.dirk.html',
+                'cache' => '.',
+                'echo'  => 'htmlspecialchars(%s, ENT_QUOTES, \'UTF-8\')',
             ],
             $config
         );
-        $this->cache        = $config['cache'];
-        $this->echoFormat   = $config['echo'];
-        parent::__construct($config, $composers);
+        $this->cache      = isset($config['cache']) ? $config['cache'] : '.';
+        $this->echoFormat = isset($config['echo'])  ? $config['echo']  : '%s';
+        parent::__construct($config);
     }
 
     protected $compilers = array(
@@ -38,19 +38,14 @@ class Dirk extends PhpEngine
      */
     protected function prepare($name)
     {
-        if ($this->separator !== '/') {
-            $name = str_replace($this->separator, '/', $name);
-        }
         $tpl = $this->views . '/' . $name . $this->ext;
         $php = $this->cache . '/' . md5($name) . '.php';
         if (!file_exists($php) || filemtime($tpl) > filemtime($php)) {
-            if (file_exists($tpl)) {
-                $text = file_get_contents($tpl);
-                foreach ($this->compilers as $type) {
-                    $text = $this->{'compile' . $type}($text);
-                }
-                file_put_contents($php, $text);
+            $text = file_get_contents($tpl);
+            foreach ($this->compilers as $type) {
+                $text = $this->{'compile' . $type}($text);
             }
+            file_put_contents($php, $text);
         }
         return $php;
     }
@@ -245,6 +240,43 @@ class Dirk extends PhpEngine
         return "<?php endforeach; ?>";
     }
 
+    protected $emptyCounter = 0;
+    /**
+     * Compile the forelse statements
+     *
+     * @param  string  $expression
+     * @return string
+     */
+    protected function compileForelse($expression)
+    {
+        $this->emptyCounter++;
+        return "<?php \$__empty_{$this->emptyCounter} = true; "
+              ."foreach{$expression}: "
+              ."\$__empty_{$this->emptyCounter} = false;?>";
+    }
+
+    /**
+     * Compile the end-forelse statements
+     *
+     * @return string
+     */
+    protected function compileEmpty()
+    {
+        $s = "<?php endforeach; if (\$__empty_{$this->emptyCounter}): ?>";
+        $this->emptyCounter--;
+        return $s;
+    }
+
+    /**
+     * Compile the end-forelse statements
+     *
+     * @return string
+     */
+    protected function compileEndforelse()
+    {
+        return "<?php endif; ?>";
+    }
+
     /**
      * Compile the while statements
      *
@@ -292,7 +324,7 @@ class Dirk extends PhpEngine
         if (isset($expression{0}) && $expression{0} == '(') {
             $expression = substr($expression, 1, -1);
         }
-        return "<?php require \$this->prepare({$expression}) ?>";
+        return "<?php include \$this->prepare({$expression}) ?>";
     }
 
     /**

@@ -18,7 +18,7 @@ The package can be installed via Composer by requiring the "artoodetoo/dirk" pac
 
 **/views/hello.dirk.html**
 ```html
-@extends('layout.main')
+@extends('layout/main')
 
 <h1>Hello {{{ $name }}}!<h1>
 
@@ -84,19 +84,22 @@ Echoes and comments
 
 Conditionals
   * *@if(condition)* - Starts an if block
-  * *@else* - Starts an else block
-  * *@elseif(condition)* - Start a elseif block
-  * *@endif* - Ends a if block
+  * *@else*
+  * *@elseif(condition)*
+  * *@endif*
   * *@unless(condition)* - Starts an unless block
-  * *@endunless* - Ends an unless block
+  * *@endunless*
 
 Loops
   * *@foreach($list as $key => $val)* - Starts a foreach block
-  * *@endforeach* - Ends a foreach block
+  * *@endforeach*
+  * *@forelse($list as $key => $val)* - Starts a foreach with empty block
+  * *@empty*
+  * *@endforelse*
   * *@for($i = 0; $i < 10; $i++)* - Starts a for block
-  * *@endfor* - Ends a for block
+  * *@endfor*
   * *@while(condition)* - Starts a while block
-  * *@endwhile* - Ends a while block
+  * *@endwhile*
 
 Inheritance and sections
   * *@include(file)* - Includes another template
