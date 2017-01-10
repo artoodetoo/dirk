@@ -38,6 +38,7 @@ class Dirk extends PhpEngine
      */
     protected function prepare($name)
     {
+        $name = str_replace('.', '/', $name);
         $tpl = $this->views . '/' . $name . $this->ext;
         $php = $this->cache . '/' . md5($name) . '.php';
         if (!file_exists($php) || filemtime($tpl) > filemtime($php)) {
