@@ -14,7 +14,7 @@ class Dirk extends PhpEngine
     {
         $config = array_replace_recursive(
             [
-                'ext'   => '.dirk.html',
+                'ext'   => '.blade.php',
                 'cache' => '.',
                 'echo'  => 'htmlspecialchars(%s, ENT_QUOTES, \'UTF-8\')',
             ],
@@ -161,6 +161,17 @@ class Dirk extends PhpEngine
     protected function compileElseif($expression)
     {
         return "<?php elseif{$expression}: ?>";
+    }
+
+    /**
+     * Compile the else statements
+     *
+     * @param  string  $expression
+     * @return string
+     */
+    protected function compileElse($expression)
+    {
+        return "<?php else: ?>";
     }
 
     /**
